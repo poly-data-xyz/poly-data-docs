@@ -1,97 +1,91 @@
 ---
 title: "Introduction"
-description: "Welcome to the new home for your documentation"
+description: "Access historical orderbook data from Polymarket prediction markets"
 ---
 
-## Setting up
+## What is poly-data?
 
-Get your documentation site up and running in minutes.
+poly-data provides **historical orderbook snapshots** from all markets on Polymarket, collected via the Polymarket WebSocket feed since January 1, 2026.
+
+Whether you're building arbitrage tools, conducting academic research, or backtesting trading strategies, poly-data gives you the granular market microstructure data you need.
 
 <Card
-  title="Start here"
+  title="Quickstart"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Get your first API response in under 2 minutes.
 </Card>
 
-## Make it yours
+## Why poly-data?
 
-Design a docs site that looks great and empowers your users.
+<Columns cols={2}>
+  <Card title="Complete Coverage" icon="chart-line">
+    Every market on Polymarket, every orderbook snapshot, since day one.
+  </Card>
+  <Card title="Granular Data" icon="magnifying-glass">
+    Full bid/ask depth at each timestamp — not just mid prices.
+  </Card>
+  <Card title="Simple REST API" icon="code">
+    Clean endpoints with cursor-based pagination. No WebSocket complexity.
+  </Card>
+  <Card title="Research-Ready" icon="flask">
+    Perfect for backtesting, market microstructure analysis, and academic research.
+  </Card>
+</Columns>
+
+## Use Cases
+
+**For Developers**
+- Build arbitrage detection systems across prediction markets
+- Create real-time alerting tools based on historical patterns
+- Develop trading bots with proper backtesting capabilities
+
+**For Researchers & Analysts**
+- Study market efficiency and price discovery in prediction markets
+- Analyze liquidity dynamics around major events
+- Research bid-ask spread behavior and market maker activity
+
+## Data Overview
+
+| Metric | Value |
+|--------|-------|
+| Data collection start | January 1, 2026 |
+| Source | Polymarket WebSocket feed |
+| Coverage | All active markets |
+| Orderbook depth | Full bid/ask arrays |
+| Update frequency | Real-time collection |
+
+## Quick Links
 
 <Columns cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
+    title="API Reference"
     icon="terminal"
     href="/api-reference/introduction"
   >
-    Auto-generate API documentation from OpenAPI specifications.
+    Explore all available endpoints.
+  </Card>
+  <Card
+    title="Events API"
+    icon="calendar"
+    href="/api-reference/events"
+  >
+    Search and browse prediction market events.
+  </Card>
+  <Card
+    title="Markets API"
+    icon="store"
+    href="/api-reference/markets"
+  >
+    Get market details and token information.
+  </Card>
+  <Card
+    title="Orderbooks API"
+    icon="book"
+    href="/api-reference/orderbooks"
+  >
+    Access historical orderbook snapshots.
   </Card>
 </Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
