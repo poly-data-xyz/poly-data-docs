@@ -1,0 +1,70 @@
+---
+title: "Statistics"
+description: "Database size and system statistics"
+---
+
+The statistics endpoint provides insight into the database and system health.
+
+## Get Database Size
+
+<ParamField path="GET" method="/stats/db-size">
+  Get database size statistics broken down by table.
+</ParamField>
+
+### Example
+
+```bash
+curl "https://poly-data.xyz/stats/db-size"
+```
+
+Response:
+```json
+{
+  "database": "defaultdb",
+  "size_bytes": 5368709120,
+  "size_pretty": "5.00 GB",
+  "tables": [
+    {
+      "table": "orderbooks",
+      "size_bytes": 4294967296,
+      "size_pretty": "4.00 GB"
+    },
+    {
+      "table": "markets",
+      "size_bytes": 536870912,
+      "size_pretty": "512.00 MB"
+    },
+    {
+      "table": "events",
+      "size_bytes": 268435456,
+      "size_pretty": "256.00 MB"
+    },
+    {
+      "table": "outcomes",
+      "size_bytes": 134217728,
+      "size_pretty": "128.00 MB"
+    }
+  ]
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `database` | string | Database name |
+| `size_bytes` | integer | Total database size in bytes |
+| `size_pretty` | string | Human-readable total size |
+| `tables` | array | Per-table size breakdown |
+
+### Table Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `table` | string | Table name |
+| `size_bytes` | integer | Table size in bytes |
+| `size_pretty` | string | Human-readable table size |
+
+<Note>
+  The orderbooks table typically accounts for the vast majority of database size due to the volume of historical snapshots.
+</Note>

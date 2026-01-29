@@ -1,33 +1,137 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API Reference"
+description: "Complete reference for the poly-data REST API"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Base URL
 
-## Welcome
+All API requests should be made to:
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
-
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```
+https://poly-data.xyz
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+The poly-data API is currently **open access** — no authentication required.
+
+## Rate Limits
+
+To ensure fair usage, the API enforces rate limits:
+
+| Scope | Limit | Window |
+|-------|-------|--------|
+| **Global (all endpoints)** | 60 requests | 1 minute |
+| **Orderbooks endpoints** | 30 requests | 1 minute |
+
+Rate limit headers are included in every response:
+
+| Header | Description |
+|--------|-------------|
+| `RateLimit-Limit` | Maximum requests allowed |
+| `RateLimit-Remaining` | Requests remaining in current window |
+| `RateLimit-Reset` | Unix timestamp when the limit resets |
+
+When you exceed the rate limit, you'll receive a `429 Too Many Requests` response.
+
+## Pagination
+
+The API supports two pagination methods:
+
+### Cursor-based (Recommended)
+
+Use the `next` object returned in responses for efficient pagination through large datasets.
+
+```bash
+# First request
+curl "https://poly-data.xyz/events?limit=50"
+
+# Next page (using cursor from response)
+curl "https://poly-data.xyz/events?limit=50&cursor_end_date=1735689600000&cursor_id=12345"
+```
+
+### Offset-based
+
+Traditional offset pagination is available but less efficient for large datasets:
+
+```bash
+curl "https://poly-data.xyz/events?limit=50&offset=100"
+```
+
+## Response Format
+
+All responses are JSON. Successful responses return data directly, while errors follow this format:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "error": "Error message description"
+}
+```
+
+## HTTP Status Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Success |
+| `400` | Bad request (missing or invalid parameters) |
+| `404` | Resource not found |
+| `429` | Rate limit exceeded |
+| `500` | Internal server error |
+
+## Caching
+
+Responses are cached briefly to improve performance:
+
+| Endpoint | Cache TTL |
+|----------|-----------|
+| Most endpoints | 2-5 seconds |
+| `/orderbooks/latest` | 500ms |
+
+## Endpoints Overview
+
+<Columns cols={2}>
+  <Card
+    title="Events"
+    icon="calendar"
+    href="/api-reference/events"
+  >
+    Search and list prediction market events.
+  </Card>
+  <Card
+    title="Markets"
+    icon="store"
+    href="/api-reference/markets"
+  >
+    Get market details and token information.
+  </Card>
+  <Card
+    title="Orderbooks"
+    icon="book"
+    href="/api-reference/orderbooks"
+  >
+    Access historical orderbook snapshots.
+  </Card>
+  <Card
+    title="Statistics"
+    icon="chart-pie"
+    href="/api-reference/statistics"
+  >
+    Database size and system statistics.
+  </Card>
+</Columns>
+
+## Health Check
+
+Verify the API is operational:
+
+```bash
+curl "https://poly-data.xyz/health"
+```
+
+Response:
+```json
+{
+  "status": "ok",
+  "time": "2024-01-23T12:00:00.000Z"
+}
 ```

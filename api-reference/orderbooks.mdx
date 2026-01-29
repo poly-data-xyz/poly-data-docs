@@ -1,0 +1,266 @@
+---
+title: "Orderbooks"
+description: "Access historical orderbook snapshots"
+---
+
+The orderbooks endpoints provide access to historical bid/ask data collected from the Polymarket WebSocket feed since **January 1, 2026**. Each snapshot contains the full orderbook depth at a specific timestamp.
+
+<Warning>
+  Orderbook endpoints have stricter rate limits: **30 requests per minute**.
+</Warning>
+
+## Data Structure
+
+Each orderbook snapshot contains bid and ask arrays as `[price, size]` tuples:
+
+```json
+{
+  "ts": 1706000000000,
+  "asset_id": "abc123...",
+  "market_id": "5001",
+  "outcome_index": 0,
+  "bids": [[0.55, 1000], [0.54, 2500], [0.53, 5000]],
+  "asks": [[0.56, 800], [0.57, 1500], [0.58, 3000]]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ts` | integer | Unix timestamp in milliseconds |
+| `asset_id` | string | Token ID for the outcome |
+| `market_id` | string | Market ID |
+| `outcome_index` | integer | Outcome position (0 = first outcome) |
+| `bids` | array | Buy orders as `[price, size]` tuples, sorted by price descending |
+| `asks` | array | Sell orders as `[price, size]` tuples, sorted by price ascending |
+
+---
+
+## Query Orderbooks
+
+<ParamField path="GET" method="/orderbooks">
+  Query orderbook snapshots with filters.
+</ParamField>
+
+<Note>
+  At least one of `market_id` or `asset_id` is required.
+</Note>
+
+### Query Parameters
+
+<ParamField query="market_id" type="string">
+  Filter by market ID
+</ParamField>
+
+<ParamField query="asset_id" type="string">
+  Filter by asset/token ID
+</ParamField>
+
+<ParamField query="outcome" type="string">
+  Filter by outcome name (e.g., "Yes", "No")
+</ParamField>
+
+<ParamField query="from" type="integer">
+  Start timestamp in milliseconds (inclusive)
+</ParamField>
+
+<ParamField query="to" type="integer">
+  End timestamp in milliseconds (inclusive)
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Results per page (1-1000)
+</ParamField>
+
+<ParamField query="cursor_ts" type="integer">
+  Timestamp cursor for pagination
+</ParamField>
+
+### Examples
+
+Get orderbook history for a market:
+
+```bash
+curl "https://poly-data.xyz/orderbooks?market_id=5001&limit=50"
+```
+
+Get orderbooks within a specific time range:
+
+```bash
+curl "https://poly-data.xyz/orderbooks?market_id=5001&from=1705900000000&to=1706000000000"
+```
+
+Filter by outcome:
+
+```bash
+curl "https://poly-data.xyz/orderbooks?market_id=5001&outcome=Yes&limit=100"
+```
+
+Response:
+```json
+{
+  "market_id": "5001",
+  "limit": 100,
+  "count": 100,
+  "next": {
+    "cursor_ts": 1705899000000
+  },
+  "data": [
+    {
+      "ts": 1705950000000,
+      "asset_id": "abc123...",
+      "market_id": "5001",
+      "outcome_index": 0,
+      "bids": [[0.55, 1000], [0.54, 2500], [0.53, 5000]],
+      "asks": [[0.56, 800], [0.57, 1500], [0.58, 3000]]
+    }
+  ]
+}
+```
+
+---
+
+## Get Latest Orderbook
+
+<ParamField path="GET" method="/orderbooks/latest">
+  Get the most recent orderbook snapshot for a market or asset.
+</ParamField>
+
+<Note>
+  At least one filter parameter is required.
+</Note>
+
+### Query Parameters
+
+<ParamField query="market_id" type="string">
+  Filter by market ID
+</ParamField>
+
+<ParamField query="asset_id" type="string">
+  Filter by asset/token ID
+</ParamField>
+
+<ParamField query="outcome" type="string">
+  Filter by outcome name
+</ParamField>
+
+### Examples
+
+Get latest orderbook for a market:
+
+```bash
+curl "https://poly-data.xyz/orderbooks/latest?market_id=5001"
+```
+
+Get latest orderbook for a specific token:
+
+```bash
+curl "https://poly-data.xyz/orderbooks/latest?asset_id=abc123..."
+```
+
+Response:
+```json
+{
+  "ts": 1706000000000,
+  "asset_id": "abc123...",
+  "market_id": "5001",
+  "outcome_index": 0,
+  "bids": [[0.55, 1000], [0.54, 2500], [0.53, 5000]],
+  "asks": [[0.56, 800], [0.57, 1500], [0.58, 3000]]
+}
+```
+
+<Info>
+  This endpoint has a 500ms cache TTL for near real-time data access.
+</Info>
+
+---
+
+## Get Orderbooks by Market ID
+
+<ParamField path="GET" method="/orderbooks/:market_id">
+  Convenience endpoint to get orderbook snapshots for a specific market.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="market_id" type="string" required>
+  Market ID
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="outcome" type="string">
+  Filter by outcome name
+</ParamField>
+
+<ParamField query="from" type="integer">
+  Start timestamp in milliseconds
+</ParamField>
+
+<ParamField query="to" type="integer">
+  End timestamp in milliseconds
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Results per page (1-1000)
+</ParamField>
+
+<ParamField query="cursor_ts" type="integer">
+  Timestamp cursor for pagination
+</ParamField>
+
+### Example
+
+```bash
+curl "https://poly-data.xyz/orderbooks/5001?limit=100&from=1705900000000"
+```
+
+---
+
+## Pagination Example
+
+For large historical queries, use cursor-based pagination:
+
+```python
+import requests
+
+market_id = "5001"
+all_orderbooks = []
+cursor_ts = None
+
+while True:
+    params = {"market_id": market_id, "limit": 1000}
+    if cursor_ts:
+        params["cursor_ts"] = cursor_ts
+    
+    response = requests.get("https://poly-data.xyz/orderbooks", params=params)
+    data = response.json()
+    
+    all_orderbooks.extend(data["data"])
+    
+    if data.get("next") and data["next"].get("cursor_ts"):
+        cursor_ts = data["next"]["cursor_ts"]
+    else:
+        break
+
+print(f"Retrieved {len(all_orderbooks)} orderbook snapshots")
+```
+
+---
+
+## Common Use Cases
+
+<Columns cols={2}>
+  <Card title="Backtesting" icon="clock-rotate-left">
+    Fetch historical orderbooks within a time range to simulate trading strategies.
+  </Card>
+  <Card title="Spread Analysis" icon="chart-line">
+    Calculate bid-ask spreads over time to analyze market liquidity.
+  </Card>
+  <Card title="Event Studies" icon="calendar-check">
+    Study how orderbooks change around major news events.
+  </Card>
+  <Card title="Market Making" icon="scale-balanced">
+    Analyze historical depth to calibrate market making parameters.
+  </Card>
+</Columns>

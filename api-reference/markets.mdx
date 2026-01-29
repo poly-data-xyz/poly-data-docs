@@ -1,0 +1,159 @@
+---
+title: "Markets"
+description: "Get market details and token information"
+---
+
+Markets represent individual questions within an event. Each market has one or more outcomes (e.g., "Yes" / "No"), and each outcome has an associated token ID used in orderbooks.
+
+## List Markets
+
+<ParamField path="GET" method="/markets">
+  List all markets, ordered by 24h volume (descending).
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="limit" type="integer" default="50">
+  Results per page (1-500)
+</ParamField>
+
+<ParamField query="min24hVolume" type="number" default="0">
+  Minimum 24h volume filter
+</ParamField>
+
+<ParamField query="offset" type="integer">
+  Offset for pagination
+</ParamField>
+
+<ParamField query="cursor_volume" type="number">
+  Volume cursor for pagination
+</ParamField>
+
+<ParamField query="cursor_id" type="integer">
+  Market ID cursor for pagination
+</ParamField>
+
+### Examples
+
+Get top markets by volume:
+
+```bash
+curl "https://poly-data.xyz/markets?limit=10"
+```
+
+Get markets with at least $10,000 daily volume:
+
+```bash
+curl "https://poly-data.xyz/markets?min24hVolume=10000"
+```
+
+Response:
+```json
+{
+  "limit": 10,
+  "count": 10,
+  "next": {
+    "cursor_volume": 180000,
+    "cursor_id": 5002
+  },
+  "data": [
+    {
+      "id": 5001,
+      "event_id": 101,
+      "question": "Will candidate A win?",
+      "volume_24h": 250000,
+      "volume_total": 5000000,
+      "liquidity": 500000,
+      "active": true,
+      "closed": false
+    },
+    {
+      "id": 5002,
+      "event_id": 101,
+      "question": "Will candidate B win?",
+      "volume_24h": 180000,
+      "volume_total": 3500000,
+      "liquidity": 420000,
+      "active": true,
+      "closed": false
+    }
+  ]
+}
+```
+
+---
+
+## Get Market
+
+<ParamField path="GET" method="/markets/:id">
+  Get a single market with its outcomes and token IDs.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Market ID
+</ParamField>
+
+### Example
+
+```bash
+curl "https://poly-data.xyz/markets/5001"
+```
+
+Response:
+```json
+{
+  "id": 5001,
+  "event_id": 101,
+  "question": "Will candidate A win?",
+  "description": "This market resolves to Yes if candidate A wins the election.",
+  "active": true,
+  "closed": false,
+  "volume_24h": 250000,
+  "volume_total": 5000000,
+  "liquidity": 500000,
+  "outcomes": [
+    {
+      "id": 1,
+      "outcome_index": 0,
+      "outcome": "Yes",
+      "token_id": "abc123def456789..."
+    },
+    {
+      "id": 2,
+      "outcome_index": 1,
+      "outcome": "No",
+      "token_id": "def456abc789012..."
+    }
+  ]
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | integer | Unique market identifier |
+| `event_id` | integer | Parent event ID |
+| `question` | string | The market question |
+| `description` | string | Detailed market description |
+| `active` | boolean | Whether the market is currently active |
+| `closed` | boolean | Whether the market has closed |
+| `volume_24h` | number | Trading volume in the last 24 hours |
+| `volume_total` | number | All-time trading volume |
+| `liquidity` | number | Current liquidity in the market |
+| `outcomes` | array | List of possible outcomes |
+
+### Outcome Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | integer | Outcome ID |
+| `outcome_index` | integer | Position index (0 for first outcome) |
+| `outcome` | string | Outcome name (e.g., "Yes", "No") |
+| `token_id` | string | Token ID used in orderbook queries |
+
+<Note>
+  The `token_id` is what you'll use as the `asset_id` parameter when querying orderbooks for a specific outcome.
+</Note>

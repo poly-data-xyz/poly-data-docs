@@ -1,0 +1,91 @@
+---
+title: "Introduction"
+description: "Access historical orderbook data from Polymarket prediction markets"
+---
+
+## What is poly-data?
+
+poly-data provides **historical orderbook snapshots** from all markets on Polymarket, collected via the Polymarket WebSocket feed since January 1, 2026.
+
+Whether you're building arbitrage tools, conducting academic research, or backtesting trading strategies, poly-data gives you the granular market microstructure data you need.
+
+<Card
+  title="Quickstart"
+  icon="rocket"
+  href="/quickstart"
+  horizontal
+>
+  Get your first API response in under 2 minutes.
+</Card>
+
+## Why poly-data?
+
+<Columns cols={2}>
+  <Card title="Complete Coverage" icon="chart-line">
+    Every market on Polymarket, every orderbook snapshot, since day one.
+  </Card>
+  <Card title="Granular Data" icon="magnifying-glass">
+    Full bid/ask depth at each timestamp — not just mid prices.
+  </Card>
+  <Card title="Simple REST API" icon="code">
+    Clean endpoints with cursor-based pagination. No WebSocket complexity.
+  </Card>
+  <Card title="Research-Ready" icon="flask">
+    Perfect for backtesting, market microstructure analysis, and academic research.
+  </Card>
+</Columns>
+
+## Use Cases
+
+**For Developers**
+- Build arbitrage detection systems across prediction markets
+- Create real-time alerting tools based on historical patterns
+- Develop trading bots with proper backtesting capabilities
+
+**For Researchers & Analysts**
+- Study market efficiency and price discovery in prediction markets
+- Analyze liquidity dynamics around major events
+- Research bid-ask spread behavior and market maker activity
+
+## Data Overview
+
+| Metric | Value |
+|--------|-------|
+| Data collection start | January 1, 2026 |
+| Source | Polymarket WebSocket feed |
+| Coverage | All active markets |
+| Orderbook depth | Full bid/ask arrays |
+| Update frequency | Real-time collection |
+
+## Quick Links
+
+<Columns cols={2}>
+  <Card
+    title="API Reference"
+    icon="terminal"
+    href="/api-reference/introduction"
+  >
+    Explore all available endpoints.
+  </Card>
+  <Card
+    title="Events API"
+    icon="calendar"
+    href="/api-reference/events"
+  >
+    Search and browse prediction market events.
+  </Card>
+  <Card
+    title="Markets API"
+    icon="store"
+    href="/api-reference/markets"
+  >
+    Get market details and token information.
+  </Card>
+  <Card
+    title="Orderbooks API"
+    icon="book"
+    href="/api-reference/orderbooks"
+  >
+    Access historical orderbook snapshots.
+  </Card>
+</Columns>

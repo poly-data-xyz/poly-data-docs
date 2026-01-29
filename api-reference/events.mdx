@@ -1,0 +1,234 @@
+---
+title: "Events"
+description: "Search and list prediction market events"
+---
+
+Events are the top-level containers for related markets. For example, "2024 Presidential Election" is an event that contains multiple markets like "Will candidate A win?" and "Will candidate B win?".
+
+## List Events
+
+<ParamField path="GET" method="/events">
+  List all events, ordered by end date.
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="limit" type="integer" default="50">
+  Results per page (1-500)
+</ParamField>
+
+<ParamField query="offset" type="integer">
+  Offset for pagination
+</ParamField>
+
+<ParamField query="cursor_end_date" type="integer">
+  Unix timestamp in milliseconds from previous response
+</ParamField>
+
+<ParamField query="cursor_id" type="integer">
+  Event ID from previous response
+</ParamField>
+
+### Example
+
+```bash
+curl "https://poly-data.xyz/events?limit=20"
+```
+
+Response:
+```json
+{
+  "limit": 20,
+  "count": 20,
+  "next": {
+    "cursor_end_date": 1735689600000,
+    "cursor_id": 500
+  },
+  "data": [
+    {
+      "id": 101,
+      "title": "2024 Presidential Election",
+      "slug": "2024-presidential-election",
+      "volume": 15000000,
+      "market_ids": ["5001", "5002", "5003"],
+      "market_count": 3
+    }
+  ]
+}
+```
+
+---
+
+## Search Events
+
+<ParamField path="GET" method="/events/search">
+  Search events by text query.
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="q" type="string" required>
+  Search query
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Results per page (1-500)
+</ParamField>
+
+<ParamField query="active" type="boolean">
+  Filter by active status
+</ParamField>
+
+<ParamField query="closed" type="boolean">
+  Filter by closed status
+</ParamField>
+
+<ParamField query="archived" type="boolean">
+  Filter by archived status
+</ParamField>
+
+<ParamField query="cursor_end_date" type="integer">
+  Cursor for pagination
+</ParamField>
+
+<ParamField query="cursor_id" type="integer">
+  Cursor for pagination
+</ParamField>
+
+### Examples
+
+Search for crypto-related events:
+
+```bash
+curl "https://poly-data.xyz/events/search?q=bitcoin"
+```
+
+Search for active sports events only:
+
+```bash
+curl "https://poly-data.xyz/events/search?q=superbowl&active=true&closed=false"
+```
+
+Response:
+```json
+{
+  "q": "bitcoin",
+  "filters": {
+    "active": null,
+    "closed": null,
+    "archived": null
+  },
+  "limit": 50,
+  "count": 12,
+  "next": null,
+  "data": [
+    {
+      "id": 205,
+      "title": "Bitcoin Price Milestones",
+      "slug": "bitcoin-price-milestones",
+      "volume": 8500000,
+      "market_ids": ["6001", "6002"],
+      "market_count": 2
+    }
+  ]
+}
+```
+
+---
+
+## Get Event
+
+<ParamField path="GET" method="/events/:id">
+  Get a single event by ID.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Event ID
+</ParamField>
+
+### Example
+
+```bash
+curl "https://poly-data.xyz/events/101"
+```
+
+Response:
+```json
+{
+  "id": 101,
+  "title": "2024 Presidential Election",
+  "slug": "2024-presidential-election",
+  "description": "Markets for the 2024 US Presidential Election",
+  "volume": 15000000,
+  "market_ids": ["5001", "5002", "5003"],
+  "market_count": 3,
+  "active": true,
+  "closed": false,
+  "archived": false
+}
+```
+
+---
+
+## Get Event Markets
+
+<ParamField path="GET" method="/events/:id/markets">
+  Get all markets belonging to an event.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Event ID
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="limit" type="integer" default="100">
+  Results per page (1-1000)
+</ParamField>
+
+<ParamField query="offset" type="integer">
+  Offset for pagination
+</ParamField>
+
+<ParamField query="cursor_id" type="integer">
+  Market ID cursor for pagination
+</ParamField>
+
+### Example
+
+```bash
+curl "https://poly-data.xyz/events/101/markets?limit=50"
+```
+
+Response:
+```json
+{
+  "event_id": "101",
+  "limit": 50,
+  "data": [
+    {
+      "id": 5001,
+      "event_id": 101,
+      "question": "Will candidate A win?",
+      "volume_24h": 250000,
+      "liquidity": 500000,
+      "active": true,
+      "closed": false
+    },
+    {
+      "id": 5002,
+      "event_id": 101,
+      "question": "Will candidate B win?",
+      "volume_24h": 180000,
+      "liquidity": 420000,
+      "active": true,
+      "closed": false
+    }
+  ],
+  "next": null
+}
+```
