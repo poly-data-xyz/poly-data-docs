@@ -8,7 +8,7 @@ description: "Complete reference for the poly-data REST API"
 All API requests should be made to:
 
 ```
-https://poly-data.xyz
+http://api.poly-data.xyz
 ```
 
 ## Authentication
@@ -17,7 +17,7 @@ The poly-data API is currently **open access** — no authentication required.
 
 ## Rate Limits
 
-To ensure fair usage, the API enforces rate limits:
+To ensure fair usage, the API enforces rate limits per IP address:
 
 | Scope | Limit | Window |
 |-------|-------|--------|
@@ -36,18 +36,18 @@ When you exceed the rate limit, you'll receive a `429 Too Many Requests` respons
 
 ## Pagination
 
-The API supports two pagination methods:
+The API supports two pagination methods on most list endpoints.
 
 ### Cursor-based (Recommended)
 
-Use the `next` object returned in responses for efficient pagination through large datasets.
+Use the `next` object returned in responses for efficient pagination through large datasets. Each endpoint uses different cursor fields depending on its sort order.
 
 ```bash
 # First request
-curl "https://poly-data.xyz/events?limit=50"
+curl "http://api.poly-data.xyz/events?limit=50"
 
-# Next page (using cursor from response)
-curl "https://poly-data.xyz/events?limit=50&cursor_end_date=1735689600000&cursor_id=12345"
+# Next page (using cursor values from response)
+curl "http://api.poly-data.xyz/events?limit=50&cursor_end_date=1735689600000&cursor_id=12345"
 ```
 
 ### Offset-based
@@ -55,12 +55,16 @@ curl "https://poly-data.xyz/events?limit=50&cursor_end_date=1735689600000&cursor
 Traditional offset pagination is available but less efficient for large datasets:
 
 ```bash
-curl "https://poly-data.xyz/events?limit=50&offset=100"
+curl "http://api.poly-data.xyz/events?limit=50&offset=100"
 ```
+
+<Warning>
+  Cursor-based and offset-based pagination are mutually exclusive. If `offset` is provided, cursor parameters are ignored.
+</Warning>
 
 ## Response Format
 
-All responses are JSON. Successful responses return data directly, while errors follow this format:
+All responses are JSON. Successful list responses include the data array and pagination info. Errors follow this format:
 
 ```json
 {
@@ -80,11 +84,12 @@ All responses are JSON. Successful responses return data directly, while errors 
 
 ## Caching
 
-Responses are cached briefly to improve performance:
+Responses are cached briefly server-side to improve performance:
 
 | Endpoint | Cache TTL |
 |----------|-----------|
-| Most endpoints | 2-5 seconds |
+| List and search endpoints | 2 seconds |
+| Single resource endpoints | 5 seconds |
 | `/orderbooks/latest` | 500ms |
 
 ## Endpoints Overview
@@ -125,13 +130,13 @@ Responses are cached briefly to improve performance:
 Verify the API is operational:
 
 ```bash
-curl "https://poly-data.xyz/health"
+curl "http://api.poly-data.xyz/health"
 ```
 
 Response:
 ```json
 {
   "status": "ok",
-  "time": "2024-01-23T12:00:00.000Z"
+  "time": "2026-01-23T12:00:00.000Z"
 }
 ```

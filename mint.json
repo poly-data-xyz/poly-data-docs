@@ -18,7 +18,7 @@
   "topbarLinks": [
     {
       "name": "API Status",
-      "url": "https://poly-data.xyz/health"
+      "url": "http://api.poly-data.xyz/health"
     }
   ],
   "topbarCtaButton": {
@@ -44,7 +44,7 @@
       "pages": [
         "introduction",
         "quickstart"
-      ] 
+      ]
     },
     {
       "group": "API Reference",
@@ -61,6 +61,6 @@
     "github": "https://github.com/poly-data"
   },
   "api": {
-    "baseUrl": "https://poly-data.xyz"
+    "baseUrl": "http://api.poly-data.xyz"
   }
 }

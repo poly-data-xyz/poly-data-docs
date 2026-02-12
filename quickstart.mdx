@@ -5,57 +5,76 @@ description: "Get your first API response in under 2 minutes"
 
 ## Overview
 
-This guide walks you through finding an event, exploring its markets, and fetching historical orderbook data.
+This guide walks you through finding an event, exploring its markets, and fetching historical orderbook data — all using the REST API.
 
 <Steps>
   <Step title="Search for an Event">
     Find events related to a topic you're interested in.
     
     ```bash
-    curl "https://poly-data.xyz/events/search?q=election&limit=5"
+    curl "http://api.poly-data.xyz/events/search?q=bundesliga&limit=3"
     ```
 
     Response:
     ```json
     {
-      "q": "election",
+      "q": "bundesliga",
       "filters": { "active": null, "closed": null, "archived": null },
-      "limit": 5,
-      "count": 5,
-      "next": { "cursor_end_date": 1735689600000, "cursor_id": 12345 },
+      "limit": 3,
+      "count": 3,
+      "next": {
+        "cursor_end_date": 1736517000000,
+        "cursor_id": 127500
+      },
       "data": [
         {
-          "id": 101,
-          "title": "2024 Presidential Election",
-          "slug": "2024-presidential-election",
-          "volume": 15000000,
-          "market_ids": ["5001", "5002", "5003"],
+          "id": 126261,
+          "title": "Eintracht Frankfurt vs. BV Borussia 09 Dortmund",
+          "slug": "eintracht-frankfurt-vs-bv-borussia-09-dortmund",
+          "volume": 1459190.209213,
+          "active": true,
+          "start_date": "2026-01-09T19:30:00.000Z",
+          "end_date": "2026-01-09T19:30:00.000Z",
+          "market_ids": ["1034460", "1034462", "1034464"],
           "market_count": 3
         }
       ]
     }
     ```
+
+    <Note>
+      The search endpoint uses PostgreSQL full-text search, so queries like `"bundesliga"`, `"bitcoin"`, or `"election"` work well.
+    </Note>
   </Step>
 
   <Step title="Get Markets for the Event">
-    Fetch all markets associated with an event.
+    Fetch all markets associated with an event using one of the `market_ids` from the search result, or list them directly.
 
     ```bash
-    curl "https://poly-data.xyz/events/101/markets"
+    curl "http://api.poly-data.xyz/events/126261/markets"
     ```
 
     Response:
     ```json
     {
-      "event_id": "101",
+      "event_id": "126261",
       "limit": 100,
       "data": [
         {
-          "id": 5001,
-          "event_id": 101,
-          "question": "Will candidate A win?",
-          "volume_24h": 250000,
-          "liquidity": 500000,
+          "id": 1034460,
+          "event_id": 126261,
+          "question": "Will Eintracht Frankfurt win on 2026-01-09?",
+          "volume_24h": "225160.59",
+          "liquidity": "438058.03",
+          "active": true,
+          "closed": false
+        },
+        {
+          "id": 1034462,
+          "event_id": 126261,
+          "question": "Draw?",
+          "volume_24h": "180000.00",
+          "liquidity": "300000.00",
           "active": true,
           "closed": false
         }
@@ -66,49 +85,70 @@ This guide walks you through finding an event, exploring its markets, and fetchi
   </Step>
 
   <Step title="Get Market Details with Token IDs">
-    Fetch a specific market to see its outcomes and token IDs.
+    Fetch a specific market to see its outcomes and the token IDs you'll need for orderbook queries.
 
     ```bash
-    curl "https://poly-data.xyz/markets/5001"
+    curl "http://api.poly-data.xyz/markets/1034460"
     ```
 
     Response:
     ```json
     {
-      "id": 5001,
-      "event_id": 101,
-      "question": "Will candidate A win?",
+      "id": "1034460",
+      "event_id": "126261",
+      "question": "Will Eintracht Frankfurt win on 2026-01-09?",
+      "active": true,
+      "accepting_orders": true,
+      "volume_24h": "225160.59007300003",
+      "volume_total": "231175.940446",
+      "liquidity": "438058.02695",
       "outcomes": [
-        { "id": 1, "outcome_index": 0, "outcome": "Yes", "token_id": "abc123..." },
-        { "id": 2, "outcome_index": 1, "outcome": "No", "token_id": "def456..." }
+        {
+          "id": 12771,
+          "outcome_index": 0,
+          "outcome": "Yes",
+          "token_id": "113230976933674601135419276232321769865636781054804255103253100668166812267778"
+        },
+        {
+          "id": 12772,
+          "outcome_index": 1,
+          "outcome": "No",
+          "token_id": "114877335229422177970817804142795745566078153600519625559547182926779275233294"
+        }
       ]
     }
     ```
   </Step>
 
   <Step title="Fetch Historical Orderbook Data">
-    Get orderbook snapshots for a market within a time range.
+    Get orderbook snapshots for the market. Use the market ID directly with the convenience endpoint.
 
     ```bash
-    curl "https://poly-data.xyz/orderbooks?market_id=5001&from=1705900000000&to=1706000000000&limit=100"
+    curl "http://api.poly-data.xyz/orderbooks/1034460?limit=5"
     ```
 
     Response:
     ```json
     {
+      "market_id": "1034460",
+      "filters": { "outcome": null, "from": null, "to": null },
+      "limit": 5,
+      "count": 5,
+      "next": { "cursor_ts": 1767990000000 },
       "data": [
         {
-          "ts": 1705950000000,
-          "asset_id": "abc123...",
-          "market_id": "5001",
+          "ts": 1768006613042,
+          "asset_id": "113230976933674...",
+          "market_id": "1034460",
           "outcome_index": 0,
           "bids": [[0.55, 1000], [0.54, 2500], [0.53, 5000]],
           "asks": [[0.56, 800], [0.57, 1500], [0.58, 3000]]
         }
-      ],
-      "next": { "cursor_ts": 1705949000000 }
+      ]
     }
     ```
+
+    Use `cursor_ts` from the `next` object to paginate through all available snapshots.
   </Step>
 </Steps>
 
@@ -127,6 +167,6 @@ This guide walks you through finding an event, exploring its markets, and fetchi
     icon="chart-bar"
     href="/api-reference/orderbooks"
   >
-    Learn about orderbook data structure and filtering options.
+    Learn about orderbook data structure, filtering, and pagination patterns.
   </Card>
 </Columns>

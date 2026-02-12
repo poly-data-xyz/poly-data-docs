@@ -15,9 +15,9 @@ Each orderbook snapshot contains bid and ask arrays as `[price, size]` tuples:
 
 ```json
 {
-  "ts": 1706000000000,
-  "asset_id": "abc123...",
-  "market_id": "5001",
+  "ts": 1768006613042,
+  "asset_id": "113230976933674601135419276232321769865636781054804255103253100668166812267778",
+  "market_id": "1034460",
   "outcome_index": 0,
   "bids": [[0.55, 1000], [0.54, 2500], [0.53, 5000]],
   "asks": [[0.56, 800], [0.57, 1500], [0.58, 3000]]
@@ -29,7 +29,7 @@ Each orderbook snapshot contains bid and ask arrays as `[price, size]` tuples:
 | `ts` | integer | Unix timestamp in milliseconds |
 | `asset_id` | string | Token ID for the outcome |
 | `market_id` | string | Market ID |
-| `outcome_index` | integer | Outcome position (0 = first outcome) |
+| `outcome_index` | integer | Outcome position (0 = first outcome, typically "Yes") |
 | `bids` | array | Buy orders as `[price, size]` tuples, sorted by price descending |
 | `asks` | array | Sell orders as `[price, size]` tuples, sorted by price ascending |
 
@@ -38,7 +38,7 @@ Each orderbook snapshot contains bid and ask arrays as `[price, size]` tuples:
 ## Query Orderbooks
 
 <ParamField path="GET" method="/orderbooks">
-  Query orderbook snapshots with filters.
+  Query orderbook snapshots with filters. Results are ordered by timestamp descending (most recent first).
 </ParamField>
 
 <Note>
@@ -48,31 +48,31 @@ Each orderbook snapshot contains bid and ask arrays as `[price, size]` tuples:
 ### Query Parameters
 
 <ParamField query="market_id" type="string">
-  Filter by market ID
+  Filter by market ID.
 </ParamField>
 
 <ParamField query="asset_id" type="string">
-  Filter by asset/token ID
+  Filter by asset/token ID.
 </ParamField>
 
 <ParamField query="outcome" type="string">
-  Filter by outcome name (e.g., "Yes", "No")
+  Filter by outcome. Accepts `yes`, `no`, `0`, or `1`.
 </ParamField>
 
 <ParamField query="from" type="integer">
-  Start timestamp in milliseconds (inclusive)
+  Start timestamp in milliseconds (inclusive).
 </ParamField>
 
 <ParamField query="to" type="integer">
-  End timestamp in milliseconds (inclusive)
+  End timestamp in milliseconds (inclusive).
 </ParamField>
 
 <ParamField query="limit" type="integer" default="100">
-  Results per page (1-1000)
+  Results per page (1–1000).
 </ParamField>
 
 <ParamField query="cursor_ts" type="integer">
-  Timestamp cursor for pagination
+  Timestamp cursor for pagination. Returns rows with `ts < cursor_ts`.
 </ParamField>
 
 ### Examples
@@ -80,38 +80,44 @@ Each orderbook snapshot contains bid and ask arrays as `[price, size]` tuples:
 Get orderbook history for a market:
 
 ```bash
-curl "https://poly-data.xyz/orderbooks?market_id=5001&limit=50"
+curl "http://api.poly-data.xyz/orderbooks?market_id=1034460&limit=50"
 ```
 
 Get orderbooks within a specific time range:
 
 ```bash
-curl "https://poly-data.xyz/orderbooks?market_id=5001&from=1705900000000&to=1706000000000"
+curl "http://api.poly-data.xyz/orderbooks?market_id=1034460&from=1767290000000&to=1768010000000"
 ```
 
-Filter by outcome:
+Filter by "Yes" outcome:
 
 ```bash
-curl "https://poly-data.xyz/orderbooks?market_id=5001&outcome=Yes&limit=100"
+curl "http://api.poly-data.xyz/orderbooks?market_id=1034460&outcome=yes&limit=100"
 ```
 
 Response:
 ```json
 {
-  "market_id": "5001",
+  "filters": {
+    "market_id": "1034460",
+    "asset_id": null,
+    "outcome": null,
+    "from": null,
+    "to": null
+  },
   "limit": 100,
   "count": 100,
   "next": {
-    "cursor_ts": 1705899000000
+    "cursor_ts": 1767950000000
   },
   "data": [
     {
-      "ts": 1705950000000,
-      "asset_id": "abc123...",
-      "market_id": "5001",
+      "ts": 1768006613042,
+      "asset_id": "113230976933674...",
+      "market_id": "1034460",
       "outcome_index": 0,
-      "bids": [[0.55, 1000], [0.54, 2500], [0.53, 5000]],
-      "asks": [[0.56, 800], [0.57, 1500], [0.58, 3000]]
+      "bids": [[0.55, 1000], [0.54, 2500]],
+      "asks": [[0.56, 800], [0.57, 1500]]
     }
   ]
 }
@@ -126,21 +132,21 @@ Response:
 </ParamField>
 
 <Note>
-  At least one filter parameter is required.
+  At least one filter parameter (`market_id`, `asset_id`, or `outcome`) is required.
 </Note>
 
 ### Query Parameters
 
 <ParamField query="market_id" type="string">
-  Filter by market ID
+  Filter by market ID.
 </ParamField>
 
 <ParamField query="asset_id" type="string">
-  Filter by asset/token ID
+  Filter by asset/token ID.
 </ParamField>
 
 <ParamField query="outcome" type="string">
-  Filter by outcome name
+  Filter by outcome. Accepts `yes`, `no`, `0`, or `1`.
 </ParamField>
 
 ### Examples
@@ -148,21 +154,21 @@ Response:
 Get latest orderbook for a market:
 
 ```bash
-curl "https://poly-data.xyz/orderbooks/latest?market_id=5001"
+curl "http://api.poly-data.xyz/orderbooks/latest?market_id=1034460"
 ```
 
 Get latest orderbook for a specific token:
 
 ```bash
-curl "https://poly-data.xyz/orderbooks/latest?asset_id=abc123..."
+curl "http://api.poly-data.xyz/orderbooks/latest?asset_id=113230976933674601135419276232321769865636781054804255103253100668166812267778"
 ```
 
 Response:
 ```json
 {
-  "ts": 1706000000000,
-  "asset_id": "abc123...",
-  "market_id": "5001",
+  "ts": 1768006613042,
+  "asset_id": "113230976933674601135419276232321769865636781054804255103253100668166812267778",
+  "market_id": "1034460",
   "outcome_index": 0,
   "bids": [[0.55, 1000], [0.54, 2500], [0.53, 5000]],
   "asks": [[0.56, 800], [0.57, 1500], [0.58, 3000]]
@@ -178,73 +184,119 @@ Response:
 ## Get Orderbooks by Market ID
 
 <ParamField path="GET" method="/orderbooks/:market_id">
-  Convenience endpoint to get orderbook snapshots for a specific market.
+  Convenience endpoint to get orderbook snapshots for a specific market. Results are ordered by timestamp descending.
 </ParamField>
 
 ### Path Parameters
 
 <ParamField path="market_id" type="string" required>
-  Market ID
+  Market ID.
 </ParamField>
 
 ### Query Parameters
 
 <ParamField query="outcome" type="string">
-  Filter by outcome name
+  Filter by outcome. Accepts `yes`, `no`, `0`, or `1`.
 </ParamField>
 
 <ParamField query="from" type="integer">
-  Start timestamp in milliseconds
+  Start timestamp in milliseconds (inclusive).
 </ParamField>
 
 <ParamField query="to" type="integer">
-  End timestamp in milliseconds
+  End timestamp in milliseconds (inclusive).
 </ParamField>
 
 <ParamField query="limit" type="integer" default="100">
-  Results per page (1-1000)
+  Results per page (1–1000).
 </ParamField>
 
 <ParamField query="cursor_ts" type="integer">
-  Timestamp cursor for pagination
+  Timestamp cursor for pagination. Returns rows with `ts < cursor_ts`.
 </ParamField>
 
 ### Example
 
 ```bash
-curl "https://poly-data.xyz/orderbooks/5001?limit=100&from=1705900000000"
+curl "http://api.poly-data.xyz/orderbooks/1034460?limit=100"
+```
+
+Response:
+```json
+{
+  "market_id": "1034460",
+  "filters": {
+    "outcome": null,
+    "from": null,
+    "to": null
+  },
+  "limit": 100,
+  "count": 100,
+  "next": {
+    "cursor_ts": 1767950000000
+  },
+  "data": [
+    {
+      "ts": 1768006613042,
+      "asset_id": "113230976933674...",
+      "market_id": "1034460",
+      "outcome_index": 0,
+      "bids": [[0.55, 1000], [0.54, 2500]],
+      "asks": [[0.56, 800], [0.57, 1500]]
+    }
+  ]
+}
 ```
 
 ---
 
 ## Pagination Example
 
-For large historical queries, use cursor-based pagination:
+For large historical queries, use cursor-based pagination. Start with a very high `cursor_ts` value and follow the `next` cursor:
 
 ```python
 import requests
+import time
 
-market_id = "5001"
+market_id = "1034460"
 all_orderbooks = []
-cursor_ts = None
+cursor_ts = "9999999999999"
 
 while True:
-    params = {"market_id": market_id, "limit": 1000}
-    if cursor_ts:
-        params["cursor_ts"] = cursor_ts
-    
-    response = requests.get("https://poly-data.xyz/orderbooks", params=params)
+    params = {"limit": 100, "cursor_ts": cursor_ts}
+
+    response = requests.get(
+        f"http://api.poly-data.xyz/orderbooks/{market_id}",
+        params=params
+    )
+
+    if response.status_code == 429:
+        print("Rate limited, waiting 60s...")
+        time.sleep(60)
+        continue
+
     data = response.json()
-    
+
+    if "data" not in data:
+        print(f"Unexpected response: {data}")
+        break
+
     all_orderbooks.extend(data["data"])
-    
+    print(f"Fetched {len(data['data'])} rows (total: {len(all_orderbooks)})")
+
     if data.get("next") and data["next"].get("cursor_ts"):
         cursor_ts = data["next"]["cursor_ts"]
     else:
         break
 
+    time.sleep(0.1)  # Be kind to the API
+
 print(f"Retrieved {len(all_orderbooks)} orderbook snapshots")
 ```
+
+<Tip>
+  Add a small delay between requests (e.g., `time.sleep(0.1)`) to avoid hitting the 30 requests/minute rate limit.
+</Tip>
 
 ---
 

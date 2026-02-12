@@ -51,7 +51,7 @@
       "anchors": [
         {
           "anchor": "API Status",
-          "href": "https://poly-data.xyz/health",
+          "href": "http://api.poly-data.xyz/health",
           "icon": "heart-pulse"
         },
         {
@@ -66,7 +66,7 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:support@poly-data.xyz"
+        "href": "mailto:pascal.feigenwinter@hotmail.ch"
       }
     ],
     "primary": {
@@ -86,8 +86,7 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/placeholder",
-      "github": "https://github.com/placeholder"
+      "github": "https://github.com/pfewi"
     }
   }
 }

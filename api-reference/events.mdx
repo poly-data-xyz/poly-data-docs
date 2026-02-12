@@ -3,57 +3,98 @@ title: "Events"
 description: "Search and list prediction market events"
 ---
 
-Events are the top-level containers for related markets. For example, "2024 Presidential Election" is an event that contains multiple markets like "Will candidate A win?" and "Will candidate B win?".
+Events are the top-level containers for related markets. For example, "Eintracht Frankfurt vs. BV Borussia 09 Dortmund" is an event that contains multiple markets like "Will Eintracht Frankfurt win?" and "Draw?".
 
 ## List Events
 
 <ParamField path="GET" method="/events">
-  List all events, ordered by end date.
+  List all events, ordered by end date (ascending, nulls last).
 </ParamField>
 
 ### Query Parameters
 
 <ParamField query="limit" type="integer" default="50">
-  Results per page (1-500)
+  Results per page (1–500).
 </ParamField>
 
 <ParamField query="offset" type="integer">
-  Offset for pagination
+  Offset for pagination. When provided, cursor parameters are ignored.
 </ParamField>
 
 <ParamField query="cursor_end_date" type="integer">
-  Unix timestamp in milliseconds from previous response
+  Unix timestamp in milliseconds from the `next` object of a previous response.
 </ParamField>
 
 <ParamField query="cursor_id" type="integer">
-  Event ID from previous response
+  Event ID from the `next` object of a previous response.
 </ParamField>
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | integer | Event ID |
+| `title` | string | Event title |
+| `slug` | string | URL-safe slug |
+| `description` | string | Event description |
+| `categories` | string | Event categories |
+| `created_at` | string | ISO 8601 creation timestamp |
+| `start_date` | string | ISO 8601 start timestamp |
+| `end_date` | string | ISO 8601 end timestamp |
+| `active` | boolean | Whether the event is active |
+| `closed` | boolean | Whether the event is closed |
+| `archived` | boolean | Whether the event is archived |
+| `volume` | number | Total trading volume |
+| `liquidity` | number | Current liquidity |
+| `open_interest` | number | Open interest |
+| `comment_count` | integer | Number of comments |
+
+<Note>
+  The list endpoint does **not** include `market_ids` or `market_count`. Use the [search endpoint](#search-events) or [event markets endpoint](#get-event-markets) to get associated markets.
+</Note>
 
 ### Example
 
 ```bash
-curl "https://poly-data.xyz/events?limit=20"
+curl "http://api.poly-data.xyz/events?limit=3"
 ```
 
-Response:
+Response (cursor-based):
 ```json
 {
-  "limit": 20,
-  "count": 20,
-  "next": {
-    "cursor_end_date": 1735689600000,
-    "cursor_id": 500
-  },
+  "limit": 3,
   "data": [
     {
-      "id": 101,
-      "title": "2024 Presidential Election",
-      "slug": "2024-presidential-election",
-      "volume": 15000000,
-      "market_ids": ["5001", "5002", "5003"],
-      "market_count": 3
+      "id": 126261,
+      "title": "Eintracht Frankfurt vs. BV Borussia 09 Dortmund",
+      "slug": "eintracht-frankfurt-vs-bv-borussia-09-dortmund",
+      "description": "...",
+      "categories": "sports",
+      "created_at": "2025-12-27T05:00:04.093Z",
+      "start_date": "2026-01-09T19:30:00.000Z",
+      "end_date": "2026-01-09T19:30:00.000Z",
+      "active": true,
+      "closed": false,
+      "archived": false,
+      "volume": 1459190.209213,
+      "liquidity": 500000,
+      "open_interest": 250000,
+      "comment_count": 12
     }
-  ]
+  ],
+  "next": {
+    "cursor_end_date": 1736448600000,
+    "cursor_id": 126261
+  }
+}
+```
+
+Response (offset-based):
+```json
+{
+  "limit": 3,
+  "offset": 0,
+  "data": [ ... ]
 }
 ```
 
@@ -62,73 +103,96 @@ Response:
 ## Search Events
 
 <ParamField path="GET" method="/events/search">
-  Search events by text query.
+  Full-text search over event titles, slugs, and descriptions. Returns matching events with their associated market IDs.
 </ParamField>
 
 ### Query Parameters
 
 <ParamField query="q" type="string" required>
-  Search query
+  Search query (uses PostgreSQL `websearch_to_tsquery`).
 </ParamField>
 
 <ParamField query="limit" type="integer" default="50">
-  Results per page (1-500)
+  Results per page (1–500).
 </ParamField>
 
 <ParamField query="active" type="boolean">
-  Filter by active status
+  Filter by active status.
 </ParamField>
 
 <ParamField query="closed" type="boolean">
-  Filter by closed status
+  Filter by closed status.
 </ParamField>
 
 <ParamField query="archived" type="boolean">
-  Filter by archived status
+  Filter by archived status.
 </ParamField>
 
 <ParamField query="cursor_end_date" type="integer">
-  Cursor for pagination
+  Cursor for pagination (from `next` object).
 </ParamField>
 
 <ParamField query="cursor_id" type="integer">
-  Cursor for pagination
+  Cursor for pagination (from `next` object).
 </ParamField>
+
+### Response Fields
+
+Returns the same event fields as the [list endpoint](#list-events), plus:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `market_ids` | string[] | Array of market ID strings belonging to this event |
+| `market_count` | integer | Number of markets in this event |
 
 ### Examples
 
-Search for crypto-related events:
+Search for Bundesliga events:
 
 ```bash
-curl "https://poly-data.xyz/events/search?q=bitcoin"
+curl "http://api.poly-data.xyz/events/search?q=bundesliga"
 ```
 
-Search for active sports events only:
+Search for active, non-closed events:
 
 ```bash
-curl "https://poly-data.xyz/events/search?q=superbowl&active=true&closed=false"
+curl "http://api.poly-data.xyz/events/search?q=bundesliga&active=true&closed=false"
 ```
 
 Response:
 ```json
 {
-  "q": "bitcoin",
+  "q": "bundesliga",
   "filters": {
     "active": null,
     "closed": null,
     "archived": null
   },
   "limit": 50,
-  "count": 12,
-  "next": null,
+  "count": 50,
+  "next": {
+    "cursor_end_date": 1737118200000,
+    "cursor_id": 130200
+  },
   "data": [
     {
-      "id": 205,
-      "title": "Bitcoin Price Milestones",
-      "slug": "bitcoin-price-milestones",
-      "volume": 8500000,
-      "market_ids": ["6001", "6002"],
-      "market_count": 2
+      "id": 126261,
+      "title": "Eintracht Frankfurt vs. BV Borussia 09 Dortmund",
+      "slug": "eintracht-frankfurt-vs-bv-borussia-09-dortmund",
+      "description": "...",
+      "categories": "sports",
+      "created_at": "2025-12-27T05:00:04.093Z",
+      "start_date": "2026-01-09T19:30:00.000Z",
+      "end_date": "2026-01-09T19:30:00.000Z",
+      "active": true,
+      "closed": false,
+      "archived": false,
+      "volume": 1459190.209213,
+      "liquidity": 500000,
+      "open_interest": 250000,
+      "comment_count": 12,
+      "market_ids": ["1034460", "1034462", "1034464"],
+      "market_count": 3
     }
   ]
 }
@@ -139,34 +203,39 @@ Response:
 ## Get Event
 
 <ParamField path="GET" method="/events/:id">
-  Get a single event by ID.
+  Get a single event by ID. Returns all fields from the events table.
 </ParamField>
 
 ### Path Parameters
 
 <ParamField path="id" type="integer" required>
-  Event ID
+  Event ID.
 </ParamField>
 
 ### Example
 
 ```bash
-curl "https://poly-data.xyz/events/101"
+curl "http://api.poly-data.xyz/events/126261"
 ```
 
 Response:
 ```json
 {
-  "id": 101,
-  "title": "2024 Presidential Election",
-  "slug": "2024-presidential-election",
-  "description": "Markets for the 2024 US Presidential Election",
-  "volume": 15000000,
-  "market_ids": ["5001", "5002", "5003"],
-  "market_count": 3,
+  "id": 126261,
+  "title": "Eintracht Frankfurt vs. BV Borussia 09 Dortmund",
+  "slug": "eintracht-frankfurt-vs-bv-borussia-09-dortmund",
+  "description": "...",
+  "categories": "sports",
+  "created_at": "2025-12-27T05:00:04.093Z",
+  "start_date": "2026-01-09T19:30:00.000Z",
+  "end_date": "2026-01-09T19:30:00.000Z",
   "active": true,
   "closed": false,
-  "archived": false
+  "archived": false,
+  "volume": 1459190.209213,
+  "liquidity": 500000,
+  "open_interest": 250000,
+  "comment_count": 12
 }
 ```
 
@@ -181,54 +250,61 @@ Response:
 ### Path Parameters
 
 <ParamField path="id" type="integer" required>
-  Event ID
+  Event ID.
 </ParamField>
 
 ### Query Parameters
 
 <ParamField query="limit" type="integer" default="100">
-  Results per page (1-1000)
+  Results per page (1–1000).
 </ParamField>
 
 <ParamField query="offset" type="integer">
-  Offset for pagination
+  Offset for pagination.
 </ParamField>
 
 <ParamField query="cursor_id" type="integer">
-  Market ID cursor for pagination
+  Market ID cursor for pagination.
 </ParamField>
 
 ### Example
 
 ```bash
-curl "https://poly-data.xyz/events/101/markets?limit=50"
+curl "http://api.poly-data.xyz/events/126261/markets"
 ```
 
 Response:
 ```json
 {
-  "event_id": "101",
-  "limit": 50,
+  "event_id": "126261",
+  "limit": 100,
   "data": [
     {
-      "id": 5001,
-      "event_id": 101,
-      "question": "Will candidate A win?",
-      "volume_24h": 250000,
-      "liquidity": 500000,
+      "id": 1034460,
+      "event_id": 126261,
+      "question": "Will Eintracht Frankfurt win on 2026-01-09?",
+      "slug": "bun-ein-dor-2026-01-09-ein",
+      "description": "...",
+      "created_at": "2025-12-27T05:00:04.093Z",
+      "start_date": "2025-12-27T05:13:00.407Z",
+      "end_date": "2026-01-09T19:30:00.000Z",
+      "deploying_timestamp": "2025-12-27T05:00:55.483Z",
       "active": true,
-      "closed": false
-    },
-    {
-      "id": 5002,
-      "event_id": 101,
-      "question": "Will candidate B win?",
-      "volume_24h": 180000,
-      "liquidity": 420000,
-      "active": true,
-      "closed": false
+      "closed": false,
+      "archived": false,
+      "ready": false,
+      "funded": false,
+      "accepting_orders": true,
+      "neg_risk": true,
+      "volume_24h": "225160.59",
+      "volume_total": "231175.94",
+      "liquidity": "438058.03",
+      "order_min_size": "5",
+      "order_price_min_tick_size": "0.001"
     }
   ],
-  "next": null
+  "next": {
+    "cursor_id": 1034460
+  }
 }
 ```

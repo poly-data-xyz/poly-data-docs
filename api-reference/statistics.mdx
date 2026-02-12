@@ -3,7 +3,7 @@ title: "Statistics"
 description: "Database size and system statistics"
 ---
 
-The statistics endpoint provides insight into the database and system health.
+The statistics endpoint provides insight into the database size, broken down by table.
 
 ## Get Database Size
 
@@ -14,7 +14,7 @@ The statistics endpoint provides insight into the database and system health.
 ### Example
 
 ```bash
-curl "https://poly-data.xyz/stats/db-size"
+curl "http://api.poly-data.xyz/stats/db-size"
 ```
 
 Response:
@@ -62,9 +62,9 @@ Response:
 | Field | Type | Description |
 |-------|------|-------------|
 | `table` | string | Table name |
-| `size_bytes` | integer | Table size in bytes |
+| `size_bytes` | integer | Table size in bytes (including indexes) |
 | `size_pretty` | string | Human-readable table size |
 
 <Note>
-  The orderbooks table typically accounts for the vast majority of database size due to the volume of historical snapshots.
+  The orderbooks table typically accounts for the vast majority of database size due to the volume of historical snapshots stored.
 </Note>

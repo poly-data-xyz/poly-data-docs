@@ -3,157 +3,188 @@ title: "Markets"
 description: "Get market details and token information"
 ---
 
-Markets represent individual questions within an event. Each market has one or more outcomes (e.g., "Yes" / "No"), and each outcome has an associated token ID used in orderbooks.
+Markets represent individual questions within an event. Each market has one or more outcomes (e.g., "Yes" / "No"), and each outcome has an associated token ID used in orderbook queries.
 
 ## List Markets
 
 <ParamField path="GET" method="/markets">
-  List all markets, ordered by 24h volume (descending).
+  List all markets, ordered by 24-hour volume (descending, nulls last).
 </ParamField>
 
 ### Query Parameters
 
 <ParamField query="limit" type="integer" default="50">
-  Results per page (1-500)
+  Results per page (1–500).
 </ParamField>
 
 <ParamField query="min24hVolume" type="number" default="0">
-  Minimum 24h volume filter
+  Minimum 24-hour volume filter. Only markets with `volume_24h >= min24hVolume` are returned.
 </ParamField>
 
 <ParamField query="offset" type="integer">
-  Offset for pagination
+  Offset for pagination. When provided, cursor parameters are ignored.
 </ParamField>
 
 <ParamField query="cursor_volume" type="number">
-  Volume cursor for pagination
+  Volume cursor for pagination (from `next` object).
 </ParamField>
 
 <ParamField query="cursor_id" type="integer">
-  Market ID cursor for pagination
+  Market ID cursor for pagination (from `next` object).
 </ParamField>
 
-### Examples
+### Example
 
 Get top markets by volume:
 
 ```bash
-curl "https://poly-data.xyz/markets?limit=10"
+curl "http://api.poly-data.xyz/markets?limit=5"
 ```
 
 Get markets with at least $10,000 daily volume:
 
 ```bash
-curl "https://poly-data.xyz/markets?min24hVolume=10000"
+curl "http://api.poly-data.xyz/markets?min24hVolume=10000&limit=5"
 ```
 
 Response:
 ```json
 {
-  "limit": 10,
-  "count": 10,
-  "next": {
-    "cursor_volume": 180000,
-    "cursor_id": 5002
-  },
+  "limit": 5,
+  "min24hVolume": 10000,
   "data": [
     {
-      "id": 5001,
-      "event_id": 101,
-      "question": "Will candidate A win?",
-      "volume_24h": 250000,
-      "volume_total": 5000000,
-      "liquidity": 500000,
+      "id": 1034460,
+      "event_id": 126261,
+      "question": "Will Eintracht Frankfurt win on 2026-01-09?",
+      "slug": "bun-ein-dor-2026-01-09-ein",
+      "description": "...",
+      "created_at": "2025-12-27T05:00:04.093Z",
+      "start_date": "2025-12-27T05:13:00.407Z",
+      "end_date": "2026-01-09T19:30:00.000Z",
+      "deploying_timestamp": "2025-12-27T05:00:55.483Z",
       "active": true,
-      "closed": false
-    },
-    {
-      "id": 5002,
-      "event_id": 101,
-      "question": "Will candidate B win?",
-      "volume_24h": 180000,
-      "volume_total": 3500000,
-      "liquidity": 420000,
-      "active": true,
-      "closed": false
+      "closed": false,
+      "archived": false,
+      "ready": false,
+      "funded": false,
+      "accepting_orders": true,
+      "neg_risk": true,
+      "volume_24h": "225160.59",
+      "volume_total": "231175.94",
+      "liquidity": "438058.03",
+      "order_min_size": "5",
+      "order_price_min_tick_size": "0.001"
     }
-  ]
+  ],
+  "next": {
+    "cursor_volume": 225160.59,
+    "cursor_id": 1034460
+  }
 }
 ```
+
+<Note>
+  `cursor_volume` can be `null` for markets without 24-hour volume data.
+</Note>
 
 ---
 
 ## Get Market
 
 <ParamField path="GET" method="/markets/:id">
-  Get a single market with its outcomes and token IDs.
+  Get a single market by its numeric ID, including embedded outcomes with token IDs.
 </ParamField>
 
 ### Path Parameters
 
 <ParamField path="id" type="integer" required>
-  Market ID
+  Market ID (numeric only).
 </ParamField>
 
 ### Example
 
 ```bash
-curl "https://poly-data.xyz/markets/5001"
+curl "http://api.poly-data.xyz/markets/1034460"
 ```
 
 Response:
 ```json
 {
-  "id": 5001,
-  "event_id": 101,
-  "question": "Will candidate A win?",
-  "description": "This market resolves to Yes if candidate A wins the election.",
+  "id": "1034460",
+  "event_id": "126261",
+  "question": "Will Eintracht Frankfurt win on 2026-01-09?",
+  "slug": "bun-ein-dor-2026-01-09-ein",
+  "description": "In the upcoming game, scheduled for January 9, 2026\nIf Eintracht Frankfurt wins, this market will resolve to \"Yes\".\nOtherwise, this market will resolve to \"No\".",
+  "created_at": "2025-12-27T05:00:04.093Z",
+  "start_date": "2025-12-27T05:13:00.407Z",
+  "end_date": "2026-01-09T19:30:00.000Z",
+  "deploying_timestamp": "2025-12-27T05:00:55.483Z",
   "active": true,
   "closed": false,
-  "volume_24h": 250000,
-  "volume_total": 5000000,
-  "liquidity": 500000,
+  "archived": false,
+  "ready": false,
+  "funded": false,
+  "accepting_orders": true,
+  "neg_risk": true,
+  "volume_24h": "225160.59007300003",
+  "volume_total": "231175.940446",
+  "liquidity": "438058.02695",
+  "order_min_size": "5",
+  "order_price_min_tick_size": "0.001",
   "outcomes": [
     {
-      "id": 1,
+      "id": 12771,
       "outcome_index": 0,
       "outcome": "Yes",
-      "token_id": "abc123def456789..."
+      "token_id": "113230976933674601135419276232321769865636781054804255103253100668166812267778"
     },
     {
-      "id": 2,
+      "id": 12772,
       "outcome_index": 1,
       "outcome": "No",
-      "token_id": "def456abc789012..."
+      "token_id": "114877335229422177970817804142795745566078153600519625559547182926779275233294"
     }
   ]
 }
 ```
 
-### Response Fields
+### Market Response Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | integer | Unique market identifier |
-| `event_id` | integer | Parent event ID |
+| `id` | string | Market ID |
+| `event_id` | string | Parent event ID |
 | `question` | string | The market question |
+| `slug` | string | URL-safe slug |
 | `description` | string | Detailed market description |
-| `active` | boolean | Whether the market is currently active |
-| `closed` | boolean | Whether the market has closed |
-| `volume_24h` | number | Trading volume in the last 24 hours |
-| `volume_total` | number | All-time trading volume |
-| `liquidity` | number | Current liquidity in the market |
-| `outcomes` | array | List of possible outcomes |
+| `created_at` | string | ISO 8601 creation timestamp |
+| `start_date` | string | ISO 8601 start timestamp |
+| `end_date` | string | ISO 8601 end timestamp |
+| `deploying_timestamp` | string | ISO 8601 deployment timestamp |
+| `active` | boolean | Whether the market is active |
+| `closed` | boolean | Whether the market is closed |
+| `archived` | boolean | Whether the market is archived |
+| `ready` | boolean | Whether the market is ready |
+| `funded` | boolean | Whether the market is funded |
+| `accepting_orders` | boolean | Whether orders are currently accepted |
+| `neg_risk` | boolean | Negative risk flag |
+| `volume_24h` | string | Trading volume in the last 24 hours |
+| `volume_total` | string | All-time trading volume |
+| `liquidity` | string | Current liquidity |
+| `order_min_size` | string | Minimum order size |
+| `order_price_min_tick_size` | string | Minimum price tick size |
+| `outcomes` | array | List of outcomes (only on single-market endpoint) |
 
 ### Outcome Object
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | integer | Outcome ID |
-| `outcome_index` | integer | Position index (0 for first outcome) |
+| `outcome_index` | integer | Position index (0 = Yes, 1 = No) |
 | `outcome` | string | Outcome name (e.g., "Yes", "No") |
-| `token_id` | string | Token ID used in orderbook queries |
+| `token_id` | string | Token ID used in orderbook queries as `asset_id` |
 
-<Note>
+<Tip>
   The `token_id` is what you'll use as the `asset_id` parameter when querying orderbooks for a specific outcome.
-</Note>
+</Tip>
